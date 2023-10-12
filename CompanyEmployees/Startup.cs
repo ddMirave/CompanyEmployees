@@ -1,6 +1,8 @@
 ﻿using CompanyEmployees.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using NLog;
+using AutoMapper;
+using Contracts;
 
 namespace CompanyEmployees
 {
@@ -25,10 +27,11 @@ namespace CompanyEmployees
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerManager logger)
         {
             if (env.IsDevelopment())
             {
@@ -36,7 +39,7 @@ namespace CompanyEmployees
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.ConfigureExceptionHandler(logger);
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCors("CorsPolicy");

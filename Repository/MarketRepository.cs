@@ -11,9 +11,9 @@ namespace Repository
 {
     public class MarketRepository : RepositoryBase<Market>, IMarketRepository
     {
-        public MarketRepository(RepositoryContext repositoryContext)
-        : base(repositoryContext)
-        {
-        }
+        public MarketRepository(RepositoryContext repositoryContext): base(repositoryContext){}
+        public IEnumerable<Market> GetAllMarkets(bool trackChanges) => FindAll(trackChanges)
+          .OrderBy(c => c.Name)
+          .ToList();
     }
 }
