@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CompanyEmployees.ActionFilters;
 using CompanyEmployees.ModelBinders;
 using Contracts;
 using Entities.DataTransferObjects;
@@ -45,13 +46,9 @@ namespace CompanyEmployees.Controllers
             }
         }
         [HttpPost]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> CreateMarket([FromBody] MarketForCreationDto market)
         {
-            if (market == null)
-            {
-                _logger.LogError("MarketForCreationDto object sent from client is null.");
-                return BadRequest("MarketForCreationDto object is null");
-            }
             var marketEntity = _mapper.Map<Market>(market);
             _repository.Market.CreateMarket(marketEntity);
             await _repository.SaveAsync();
@@ -94,32 +91,21 @@ namespace CompanyEmployees.Controllers
             return CreatedAtRoute("MarketCollection", new { ids }, marketCollectionToReturn);
         }
         [HttpDelete("{id}")]
+        [ServiceFilter(typeof(ValidateMarketExistsAttribute))]
         public async Task<IActionResult> DeleteMarket(Guid id)
         {
-            var market = await _repository.Market.GetMarketAsync(id, trackChanges: false);
-            if (market == null)
-            {
-                _logger.LogInfo($"Market with id: {id} doesn't exist in the database.");
-                return NotFound();
-            }
+            var market = HttpContext.Items["market"] as Market;
             _repository.Market.DeleteMarket(market);
             await _repository.SaveAsync();
             return NoContent();
         }
         [HttpPut("{id}")]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
+        [ServiceFilter(typeof(ValidateMarketExistsAttribute))]
+
         public async Task<IActionResult> UpdateMarket(Guid id, [FromBody] MarketForUpdateDto market)
         {
-            if (market == null)
-            {
-                _logger.LogError("MarketForUpdateDto object sent from client is null.");
-                return BadRequest("MarketForUpdateDto object is null");
-            }
-            var marketEntity = await _repository.Market.GetMarketAsync(id, trackChanges: true);
-            if (marketEntity == null)
-            {
-                _logger.LogInfo($"Market with id: {id} doesn't exist in the database.");
-                return NotFound();
-            }
+            var marketEntity = HttpContext.Items["market"] as Market;
             _mapper.Map(market, marketEntity);
             await _repository.SaveAsync();
             return NoContent();

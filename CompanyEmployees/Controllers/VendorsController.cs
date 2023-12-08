@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using CompanyEmployees.ActionFilters;
 using Contracts;
 using Entities.DataTransferObjects;
 using Entities.Models;
+using Entities.RequestFeatures;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace CompanyEmployees.Controllers
 {
@@ -22,7 +25,7 @@ namespace CompanyEmployees.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetVendorsForMarket(Guid marketId)
+        public async Task<IActionResult> GetVendorsForMarket(Guid marketId, [FromQuery] VendorParameters vendorParameters)
         {
             var market = await _repository.Market.GetMarketAsync(marketId, trackChanges: false);
             if (market == null)
@@ -30,7 +33,8 @@ namespace CompanyEmployees.Controllers
                 _logger.LogInfo($"Market with id: {marketId} doesn't exist in the database.");
                 return NotFound();
             }
-            var vendorsFromDb = await _repository.Vendor.GetVendorsAsync(marketId, trackChanges: false);
+            var vendorsFromDb = await _repository.Vendor.GetVendorsAsync(marketId, vendorParameters, trackChanges: false);
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(vendorsFromDb.MetaData));
             var vendorsDto = _mapper.Map<IEnumerable<VendorDto>>(vendorsFromDb);
             return Ok(vendorsDto);
         }
@@ -82,54 +86,26 @@ namespace CompanyEmployees.Controllers
             }, vendorToReturn);
         }
         [HttpDelete("{id}")]
+        [ServiceFilter(typeof(ValidateVendorForMarketExistsAttribute))]
         public async Task<IActionResult> DeleteVendorForMarket(Guid marketId, Guid id)
         {
-            var market = await _repository.Market.GetMarketAsync(marketId, trackChanges: false);
-            if (market == null)
-            {
-                _logger.LogInfo($"Market with id: {marketId} doesn't exist in the database.");
-                return NotFound();
-            }
-            var vendorForMarket = await _repository.Vendor.GetVendorAsync(marketId, id, trackChanges: false);
-            if (vendorForMarket == null)
-            {
-                _logger.LogInfo($"Vendor with id: {id} doesn't exist in the database.");
-                return NotFound();
-            }
+            var vendorForMarket = HttpContext.Items["vendor"] as Vendor;
             _repository.Vendor.DeleteVendor(vendorForMarket);
             await _repository.SaveAsync();
             return NoContent();
         }
         [HttpPut("{id}")]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
+        [ServiceFilter(typeof(ValidateVendorForMarketExistsAttribute))]
         public async Task<IActionResult> UpdateVendorForMarket(Guid marketId, Guid id, [FromBody] VendorForUpdateDto vendor)
         {
-            if (vendor == null)
-            {
-                _logger.LogError("VendorForUpdateDto object sent from client is null.");
-                return BadRequest("VendorForUpdateDto object is null");
-            }
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Invalid model state for the VendorForUpdateDto object");
-                return UnprocessableEntity(ModelState);
-            }
-            var market = await _repository.Market.GetMarketAsync(marketId, trackChanges: false);
-            if (market == null)
-            {
-                _logger.LogInfo($"Market with id: {marketId} doesn't exist in the database.");
-                return NotFound();
-            }
-            var vendorEntity = await _repository.Vendor.GetVendorAsync(marketId, id, trackChanges: true);
-            if (vendorEntity == null)
-            {
-                _logger.LogInfo($"Vendor with id: {id} doesn't exist in the database.");
-                return NotFound();
-            }
+            var vendorEntity = HttpContext.Items["vendor"] as Vendor;
             _mapper.Map(vendor, vendorEntity);
             await _repository.SaveAsync();
             return NoContent();
         }
         [HttpPatch("{id}")]
+        [ServiceFilter(typeof(ValidateVendorForMarketExistsAttribute))]
         public async Task<IActionResult> PartiallyUpdateVendorForMarket(Guid marketId, Guid id, [FromBody] JsonPatchDocument<VendorForUpdateDto> patchDoc)
         {
             if (patchDoc == null)
@@ -137,18 +113,7 @@ namespace CompanyEmployees.Controllers
                 _logger.LogError("patchDoc object sent from client is null.");
                 return BadRequest("patchDoc object is null");
             }
-            var market = await _repository.Market.GetMarketAsync(marketId, trackChanges: false);
-            if (market == null)
-            {
-                _logger.LogInfo($"Market with id: {marketId} doesn't exist in the database.");
-                return NotFound();
-            }
-            var vendorEntity = await _repository.Vendor.GetVendorAsync(marketId, id, trackChanges: true);
-            if (vendorEntity == null)
-            {
-                _logger.LogInfo($"Vendor with id: {id} doesn't exist in the database.");
-                return NotFound();
-            }
+            var vendorEntity = HttpContext.Items["vendor"] as Vendor;
             var vendorToPatch = _mapper.Map<VendorForUpdateDto>(vendorEntity);
             patchDoc.ApplyTo(vendorToPatch, ModelState);
             TryValidateModel(vendorToPatch);

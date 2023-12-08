@@ -7,15 +7,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Entities.RequestFeatures;
+using System.ComponentModel.Design;
 
 namespace Repository
 {
     public class VendorRepository : RepositoryBase<Vendor>, IVendorRepository
     {
         public VendorRepository(RepositoryContext repositoryContext) : base(repositoryContext){}
-        public async Task<IEnumerable<Vendor>> GetVendorsAsync(Guid marketId, bool trackChanges) => await FindByCondition(e => e.MarketId.Equals(marketId), trackChanges)
-            .OrderBy(e => e.Name)
-            .ToListAsync();
+        public async Task<PagedList<Vendor>> GetVendorsAsync(Guid marketId, VendorParameters vendorParameters, bool trackChanges)
+        {
+            var vendors = await FindByCondition(e => e.MarketId.Equals(marketId), trackChanges)
+                .OrderBy(e => e.Name)
+                .ToListAsync();
+            return PagedList<Vendor>.ToPagedList(vendors, vendorParameters.PageNumber, vendorParameters.PageSize);
+        }
         public async Task<Vendor> GetVendorAsync(Guid marketId, Guid id, bool trackChanges) => await FindByCondition(e => e.MarketId.Equals(marketId) && e.Id.Equals(id), trackChanges).SingleOrDefaultAsync();
         public void CreateVendorForMarket(Guid marketId, Vendor vendor)
         {
