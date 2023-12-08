@@ -23,16 +23,16 @@ namespace CompanyEmployees.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public IActionResult GetMarkets()
+        public async Task<IActionResult> GetMarkets()
         {
-            var markets = _repository.Market.GetAllMarkets(trackChanges: false);
+            var markets = await _repository.Market.GetAllMarketsAsync(trackChanges: false);
             var marketsDto = _mapper.Map<IEnumerable<MarketDto>>(markets);
             return Ok(marketsDto);
         }
         [HttpGet("{id}", Name = "MarketById")]
-        public IActionResult GetMarket(Guid id)
+        public async Task<IActionResult> GetMarket(Guid id)
         {
-            var market = _repository.Market.GetMarket(id, trackChanges: false);
+            var market = await _repository.Market.GetMarketAsync(id, trackChanges: false);
             if (market == null)
             {
                 _logger.LogInfo($"Market with id: {id} doesn't exist in the database.");
@@ -45,7 +45,7 @@ namespace CompanyEmployees.Controllers
             }
         }
         [HttpPost]
-        public IActionResult CreateMarket([FromBody] MarketForCreationDto market)
+        public async Task<IActionResult> CreateMarket([FromBody] MarketForCreationDto market)
         {
             if (market == null)
             {
@@ -54,19 +54,19 @@ namespace CompanyEmployees.Controllers
             }
             var marketEntity = _mapper.Map<Market>(market);
             _repository.Market.CreateMarket(marketEntity);
-            _repository.Save();
+            await _repository.SaveAsync();
             var marketToReturn = _mapper.Map<MarketDto>(marketEntity);
             return CreatedAtRoute("MarketById", new { id = marketToReturn.Id }, marketToReturn);
         }
         [HttpGet("collection/({ids})", Name = "MarketCollection")]
-        public IActionResult GetMarketCollection([ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> ids)
+        public async  Task<IActionResult> GetMarketCollection([ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> ids)
         {
             if (ids == null)
             {
                 _logger.LogError("Parameter ids is null");
                 return BadRequest("Parameter ids is null");
             }
-            var marketEntities = _repository.Market.GetByIds(ids, trackChanges: false);
+            var marketEntities = await _repository.Market.GetByIdsAsync(ids, trackChanges: false);
             if (ids.Count() != marketEntities.Count())
             {
                 _logger.LogError("Some ids are not valid in a collection");
@@ -76,7 +76,7 @@ namespace CompanyEmployees.Controllers
             return Ok(marketsToReturn);
         }
         [HttpPost("collection")]
-        public IActionResult CreateMarketCollection([FromBody] IEnumerable<MarketForCreationDto> marketCollection)
+        public async Task<IActionResult> CreateMarketCollection([FromBody] IEnumerable<MarketForCreationDto> marketCollection)
         {
             if (marketCollection == null)
             {
@@ -88,40 +88,40 @@ namespace CompanyEmployees.Controllers
             {
                 _repository.Market.CreateMarket(market);
             }
-            _repository.Save();
+            await _repository.SaveAsync();
             var marketCollectionToReturn = _mapper.Map<IEnumerable<MarketDto>>(marketEntities);
             var ids = string.Join(",", marketCollectionToReturn.Select(c => c.Id));
             return CreatedAtRoute("MarketCollection", new { ids }, marketCollectionToReturn);
         }
         [HttpDelete("{id}")]
-        public IActionResult DeleteMarket(Guid id)
+        public async Task<IActionResult> DeleteMarket(Guid id)
         {
-            var market = _repository.Market.GetMarket(id, trackChanges: false);
+            var market = await _repository.Market.GetMarketAsync(id, trackChanges: false);
             if (market == null)
             {
                 _logger.LogInfo($"Market with id: {id} doesn't exist in the database.");
                 return NotFound();
             }
             _repository.Market.DeleteMarket(market);
-            _repository.Save();
+            await _repository.SaveAsync();
             return NoContent();
         }
         [HttpPut("{id}")]
-        public IActionResult UpdateMarket(Guid id, [FromBody] MarketForUpdateDto market)
+        public async Task<IActionResult> UpdateMarket(Guid id, [FromBody] MarketForUpdateDto market)
         {
             if (market == null)
             {
                 _logger.LogError("MarketForUpdateDto object sent from client is null.");
                 return BadRequest("MarketForUpdateDto object is null");
             }
-            var marketEntity = _repository.Market.GetMarket(id, trackChanges: true);
+            var marketEntity = await _repository.Market.GetMarketAsync(id, trackChanges: true);
             if (marketEntity == null)
             {
                 _logger.LogInfo($"Market with id: {id} doesn't exist in the database.");
                 return NotFound();
             }
             _mapper.Map(market, marketEntity);
-            _repository.Save();
+            await _repository.SaveAsync();
             return NoContent();
         }
     }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using NLog;
 using Contracts;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyEmployees
 {
@@ -32,6 +33,10 @@ namespace CompanyEmployees
                 config.ReturnHttpNotAcceptable = true;
             }).AddNewtonsoftJson()
             .AddXmlDataContractSerializerFormatters();
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

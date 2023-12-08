@@ -9,10 +9,10 @@ namespace Contracts
 {
     public interface IMarketRepository
     {
-        IEnumerable<Market> GetAllMarkets(bool trackChanges);
-        Market GetMarket(Guid marketId, bool trackChanges);
+        Task<IEnumerable<Market>> GetAllMarketsAsync(bool trackChanges);
+        Task<Market> GetMarketAsync(Guid marketId, bool trackChanges);
         void CreateMarket(Market market);
-        IEnumerable<Market> GetByIds(IEnumerable<Guid> ids, bool trackChanges);
+        Task<IEnumerable<Market>> GetByIdsAsync(IEnumerable<Guid> ids, bool trackChanges);
         void DeleteMarket(Market market);
 
     }
