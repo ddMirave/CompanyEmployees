@@ -15,5 +15,10 @@ namespace Repository
         public IEnumerable<Vendor> GetVendors(Guid marketId, bool trackChanges) => FindByCondition(e => e.MarketId.Equals(marketId), trackChanges)
             .OrderBy(e => e.Name);
         public Vendor GetVendor(Guid marketId, Guid id, bool trackChanges) => FindByCondition(e => e.MarketId.Equals(marketId) && e.Id.Equals(id), trackChanges).SingleOrDefault();
+        public void CreateVendorForMarket(Guid marketId, Vendor vendor)
+        {
+            vendor.MarketId = marketId;
+            Create(vendor);
+        }
     }
 }

@@ -15,6 +15,10 @@ namespace CompanyEmployees
             CreateMap<Market, MarketDto>();
             CreateMap<Employee, EmployeeDto>();
             CreateMap<Vendor, VendorDto>();
+            CreateMap<CompanyForCreationDto, Company>();
+            CreateMap<MarketForCreationDto, Market>();
+            CreateMap<EmployeeForCreationDto, Employee>();
+            CreateMap<VendorForCreationDto, Vendor>();
         }
     }
 }

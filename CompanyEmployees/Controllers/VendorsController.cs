@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Contracts;
 using Entities.DataTransferObjects;
+using Entities.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +33,7 @@ namespace CompanyEmployees.Controllers
             var vendorsDto = _mapper.Map<IEnumerable<VendorDto>>(vendorsFromDb);
             return Ok(vendorsDto);
         }
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetVendorForMarket")]
         public IActionResult GetVendorForMarket(Guid marketId, Guid id)
         {
             var market = _repository.Market.GetMarket(marketId, trackChanges: false);
@@ -49,6 +50,30 @@ namespace CompanyEmployees.Controllers
             }
             var vendor = _mapper.Map<VendorDto>(vendorDb);
             return Ok(vendor);
+        }
+        [HttpPost]
+        public IActionResult CreateVendorForMarket(Guid marketId, [FromBody] VendorForCreationDto vendor)
+        {
+            if (vendor == null)
+            {
+                _logger.LogError("VendorForCreationDto object sent from client is null.");
+                return BadRequest("VendorForCreationDto object is null");
+            }
+            var market = _repository.Market.GetMarket(marketId, trackChanges: false);
+            if (market == null)
+            {
+                _logger.LogInfo($"Market with id: {marketId} doesn't exist in the database.");
+                return NotFound();
+            }
+            var vendorEntity = _mapper.Map<Vendor>(vendor);
+            _repository.Vendor.CreateVendorForMarket(marketId, vendorEntity);
+            _repository.Save();
+            var vendorToReturn = _mapper.Map<VendorDto>(vendorEntity);
+            return CreatedAtRoute("GetVendorForMarket", new
+            {
+                marketId,
+                id = vendorToReturn.Id
+            }, vendorToReturn);
         }
     }
 }

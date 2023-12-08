@@ -16,5 +16,7 @@ namespace Repository
           .OrderBy(c => c.Name)
           .ToList();
         public Market GetMarket(Guid marketId, bool trackChanges) => FindByCondition(c => c.Id.Equals(marketId), trackChanges).SingleOrDefault();
+        public void CreateMarket(Market market) => Create(market);
+        public IEnumerable<Market> GetByIds(IEnumerable<Guid> ids, bool trackChanges) => FindByCondition(x => ids.Contains(x.Id), trackChanges).ToList();
     }
 }

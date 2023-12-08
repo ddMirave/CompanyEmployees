@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
+using CompanyEmployees.ModelBinders;
 using Contracts;
 using Entities.DataTransferObjects;
+using Entities.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyEmployees.Controllers
 {
-    [Route("api/companies")]
+    [Route("api/markets")]
     [ApiController]
     public class MarketsController : ControllerBase
     {
@@ -26,7 +28,7 @@ namespace CompanyEmployees.Controllers
             var marketsDto = _mapper.Map<IEnumerable<MarketDto>>(markets);
             return Ok(marketsDto);
         }
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "MarketById")]
         public IActionResult GetMarket(Guid id)
         {
             var market = _repository.Market.GetMarket(id, trackChanges: false);
@@ -40,6 +42,55 @@ namespace CompanyEmployees.Controllers
                 var marketDto = _mapper.Map<MarketDto>(market);
                 return Ok(marketDto);
             }
+        }
+        [HttpPost]
+        public IActionResult CreateMarket([FromBody] MarketForCreationDto market)
+        {
+            if (market == null)
+            {
+                _logger.LogError("MarketForCreationDto object sent from client is null.");
+                return BadRequest("MarketForCreationDto object is null");
+            }
+            var marketEntity = _mapper.Map<Market>(market);
+            _repository.Market.CreateMarket(marketEntity);
+            _repository.Save();
+            var marketToReturn = _mapper.Map<MarketDto>(marketEntity);
+            return CreatedAtRoute("MarketById", new { id = marketToReturn.Id }, marketToReturn);
+        }
+        [HttpGet("collection/({ids})", Name = "MarketCollection")]
+        public IActionResult GetMarketCollection([ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> ids)
+        {
+            if (ids == null)
+            {
+                _logger.LogError("Parameter ids is null");
+                return BadRequest("Parameter ids is null");
+            }
+            var marketEntities = _repository.Market.GetByIds(ids, trackChanges: false);
+            if (ids.Count() != marketEntities.Count())
+            {
+                _logger.LogError("Some ids are not valid in a collection");
+                return NotFound();
+            }
+            var marketsToReturn = _mapper.Map<IEnumerable<MarketDto>>(marketEntities);
+            return Ok(marketsToReturn);
+        }
+        [HttpPost("collection")]
+        public IActionResult CreateMarketCollection([FromBody] IEnumerable<MarketForCreationDto> marketCollection)
+        {
+            if (marketCollection == null)
+            {
+                _logger.LogError("Market collection sent from client is null.");
+                return BadRequest("Market collection is null");
+            }
+            var marketEntities = _mapper.Map<IEnumerable<Market>>(marketCollection);
+            foreach (var market in marketEntities)
+            {
+                _repository.Market.CreateMarket(market);
+            }
+            _repository.Save();
+            var marketCollectionToReturn = _mapper.Map<IEnumerable<MarketDto>>(marketEntities);
+            var ids = string.Join(",", marketCollectionToReturn.Select(c => c.Id));
+            return CreatedAtRoute("MarketCollection", new { ids }, marketCollectionToReturn);
         }
     }
 }
