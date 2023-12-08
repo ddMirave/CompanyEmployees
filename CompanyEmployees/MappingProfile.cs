@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Entities.DataTransferObjects;
 using Entities.Models;
-using System.Diagnostics;
 
 namespace CompanyEmployees
 {
@@ -19,6 +18,10 @@ namespace CompanyEmployees
             CreateMap<MarketForCreationDto, Market>();
             CreateMap<EmployeeForCreationDto, Employee>();
             CreateMap<VendorForCreationDto, Vendor>();
+            CreateMap<EmployeeForUpdateDto, Employee>().ReverseMap();
+            CreateMap<VendorForUpdateDto, Vendor>().ReverseMap();
+            CreateMap<CompanyForUpdateDto, Company>();
+            CreateMap<MarketForUpdateDto, Market>();
         }
     }
 }

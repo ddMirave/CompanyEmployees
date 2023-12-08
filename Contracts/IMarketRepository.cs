@@ -13,6 +13,7 @@ namespace Contracts
         Market GetMarket(Guid marketId, bool trackChanges);
         void CreateMarket(Market market);
         IEnumerable<Market> GetByIds(IEnumerable<Guid> ids, bool trackChanges);
+        void DeleteMarket(Market market);
 
     }
 }

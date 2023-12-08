@@ -4,6 +4,7 @@ using Contracts;
 using Entities.DataTransferObjects;
 using Entities.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyEmployees.Controllers
@@ -91,6 +92,37 @@ namespace CompanyEmployees.Controllers
             var marketCollectionToReturn = _mapper.Map<IEnumerable<MarketDto>>(marketEntities);
             var ids = string.Join(",", marketCollectionToReturn.Select(c => c.Id));
             return CreatedAtRoute("MarketCollection", new { ids }, marketCollectionToReturn);
+        }
+        [HttpDelete("{id}")]
+        public IActionResult DeleteMarket(Guid id)
+        {
+            var market = _repository.Market.GetMarket(id, trackChanges: false);
+            if (market == null)
+            {
+                _logger.LogInfo($"Market with id: {id} doesn't exist in the database.");
+                return NotFound();
+            }
+            _repository.Market.DeleteMarket(market);
+            _repository.Save();
+            return NoContent();
+        }
+        [HttpPut("{id}")]
+        public IActionResult UpdateMarket(Guid id, [FromBody] MarketForUpdateDto market)
+        {
+            if (market == null)
+            {
+                _logger.LogError("MarketForUpdateDto object sent from client is null.");
+                return BadRequest("MarketForUpdateDto object is null");
+            }
+            var marketEntity = _repository.Market.GetMarket(id, trackChanges: true);
+            if (marketEntity == null)
+            {
+                _logger.LogInfo($"Market with id: {id} doesn't exist in the database.");
+                return NotFound();
+            }
+            _mapper.Map(market, marketEntity);
+            _repository.Save();
+            return NoContent();
         }
     }
 }

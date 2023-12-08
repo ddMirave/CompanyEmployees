@@ -20,5 +20,9 @@ namespace Repository
             vendor.MarketId = marketId;
             Create(vendor);
         }
+        public void DeleteVendor(Vendor vendor)
+        {
+            Delete(vendor);
+        }
     }
 }
