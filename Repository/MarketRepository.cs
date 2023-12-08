@@ -15,5 +15,6 @@ namespace Repository
         public IEnumerable<Market> GetAllMarkets(bool trackChanges) => FindAll(trackChanges)
           .OrderBy(c => c.Name)
           .ToList();
+        public Market GetMarket(Guid marketId, bool trackChanges) => FindByCondition(c => c.Id.Equals(marketId), trackChanges).SingleOrDefault();
     }
 }

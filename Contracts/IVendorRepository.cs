@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Entities.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,8 @@ namespace Contracts
 {
     public interface IVendorRepository
     {
+        IEnumerable<Vendor> GetVendors(Guid marketId, bool trackChanges);
+        Vendor GetVendor(Guid marketId, Guid id, bool trackChanges);
+
     }
 }

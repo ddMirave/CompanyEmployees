@@ -10,5 +10,6 @@ namespace Contracts
     public interface IMarketRepository
     {
         IEnumerable<Market> GetAllMarkets(bool trackChanges);
+        Market GetMarket(Guid marketId, bool trackChanges);
     }
 }

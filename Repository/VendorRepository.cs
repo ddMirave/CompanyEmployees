@@ -11,9 +11,9 @@ namespace Repository
 {
     public class VendorRepository : RepositoryBase<Vendor>, IVendorRepository
     {
-        public VendorRepository(RepositoryContext repositoryContext)
-        : base(repositoryContext)
-        {
-        }
+        public VendorRepository(RepositoryContext repositoryContext) : base(repositoryContext){}
+        public IEnumerable<Vendor> GetVendors(Guid marketId, bool trackChanges) => FindByCondition(e => e.MarketId.Equals(marketId), trackChanges)
+            .OrderBy(e => e.Name);
+        public Vendor GetVendor(Guid marketId, Guid id, bool trackChanges) => FindByCondition(e => e.MarketId.Equals(marketId) && e.Id.Equals(id), trackChanges).SingleOrDefault();
     }
 }

@@ -26,6 +26,20 @@ namespace CompanyEmployees.Controllers
             var marketsDto = _mapper.Map<IEnumerable<MarketDto>>(markets);
             return Ok(marketsDto);
         }
-
+        [HttpGet("{id}")]
+        public IActionResult GetMarket(Guid id)
+        {
+            var market = _repository.Market.GetMarket(id, trackChanges: false);
+            if (market == null)
+            {
+                _logger.LogInfo($"Market with id: {id} doesn't exist in the database.");
+                return NotFound();
+            }
+            else
+            {
+                var marketDto = _mapper.Map<MarketDto>(market);
+                return Ok(marketDto);
+            }
+        }
     }
 }
