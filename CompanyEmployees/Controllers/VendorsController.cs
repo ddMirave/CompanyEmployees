@@ -18,11 +18,13 @@ namespace CompanyEmployees.Controllers
         private readonly IRepositoryManager _repository;
         private readonly ILoggerManager _logger;
         private readonly IMapper _mapper;
-        public VendorsController(IRepositoryManager repository, ILoggerManager logger, IMapper mapper)
+        private readonly IDataShaper<VendorDto> _dataShaper;
+        public VendorsController(IRepositoryManager repository, ILoggerManager logger, IMapper mapper, IDataShaper<VendorDto> dataShaper)
         {
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
+            _dataShaper = dataShaper;
         }
         [HttpGet]
         public async Task<IActionResult> GetVendorsForMarket(Guid marketId, [FromQuery] VendorParameters vendorParameters)
@@ -36,7 +38,7 @@ namespace CompanyEmployees.Controllers
             var vendorsFromDb = await _repository.Vendor.GetVendorsAsync(marketId, vendorParameters, trackChanges: false);
             Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(vendorsFromDb.MetaData));
             var vendorsDto = _mapper.Map<IEnumerable<VendorDto>>(vendorsFromDb);
-            return Ok(vendorsDto);
+            return Ok(_dataShaper.ShapeData(vendorsDto, vendorParameters.Fields));
         }
         [HttpGet("{id}", Name = "GetVendorForMarket")]
         public async Task<IActionResult> GetVendorForMarket(Guid marketId, Guid id)

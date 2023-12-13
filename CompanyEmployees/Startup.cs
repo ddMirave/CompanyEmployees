@@ -4,6 +4,8 @@ using NLog;
 using Contracts;
 using Microsoft.AspNetCore.Mvc;
 using CompanyEmployees.ActionFilters;
+using Entities.DataTransferObjects;
+using Repository;
 
 namespace CompanyEmployees
 {
@@ -43,6 +45,8 @@ namespace CompanyEmployees
             services.AddScoped<ValidateMarketExistsAttribute>();
             services.AddScoped<ValidateEmployeeForCompanyExistsAttribute>();
             services.AddScoped<ValidateVendorForMarketExistsAttribute>();
+            services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
+            services.AddScoped<IDataShaper<VendorDto>, DataShaper<VendorDto>>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

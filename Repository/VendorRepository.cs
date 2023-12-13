@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Entities.RequestFeatures;
 using System.ComponentModel.Design;
+using Repository.Extensions;
 
 namespace Repository
 {
@@ -19,6 +20,7 @@ namespace Repository
         {
             var vendors = await FindByCondition(e => e.MarketId.Equals(marketId), trackChanges)
                 .OrderBy(e => e.Name)
+                .Sort(vendorParameters.OrderBy)
                 .ToListAsync();
             return PagedList<Vendor>.ToPagedList(vendors, vendorParameters.PageNumber, vendorParameters.PageSize);
         }

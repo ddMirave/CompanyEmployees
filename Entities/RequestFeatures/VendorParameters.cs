@@ -8,5 +8,10 @@ namespace Entities.RequestFeatures
 {
     public class VendorParameters : RequestParameters
     {
+        public VendorParameters()
+        {
+            OrderBy = "name";
+        }
+        public string SearchTerm { get; set; }
     }
 }
