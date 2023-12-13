@@ -47,6 +47,7 @@ namespace CompanyEmployees
             services.AddScoped<ValidateVendorForMarketExistsAttribute>();
             services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
             services.AddScoped<IDataShaper<VendorDto>, DataShaper<VendorDto>>();
+            services.ConfigureVersioning();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

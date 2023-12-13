@@ -11,6 +11,7 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace CompanyEmployees.Controllers
 {
+    [ApiVersion("1.0")]
     [Route("api/companies")]
     [ApiController]
     public class CompaniesController : ControllerBase
@@ -109,6 +110,12 @@ namespace CompanyEmployees.Controllers
             _mapper.Map(company, companyEntity);
             await _repository.SaveAsync();
             return NoContent();
+        }
+        [HttpOptions]
+        public IActionResult GetCompaniesOptions()
+        {
+            Response.Headers.Add("Allow", "GET, OPTIONS, POST");
+            return Ok();
         }
     }
 }

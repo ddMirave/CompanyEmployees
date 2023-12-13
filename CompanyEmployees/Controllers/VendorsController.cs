@@ -27,6 +27,7 @@ namespace CompanyEmployees.Controllers
             _dataShaper = dataShaper;
         }
         [HttpGet]
+        [HttpHead]
         public async Task<IActionResult> GetVendorsForMarket(Guid marketId, [FromQuery] VendorParameters vendorParameters)
         {
             var market = await _repository.Market.GetMarketAsync(marketId, trackChanges: false);
