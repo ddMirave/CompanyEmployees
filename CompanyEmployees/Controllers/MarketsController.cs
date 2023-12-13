@@ -24,6 +24,10 @@ namespace CompanyEmployees.Controllers
             _logger = logger;
             _mapper = mapper;
         }
+        /// <summary>
+        /// Получает список всех рынков
+        /// </summary>
+        /// <returns> Список рынков</returns>.
         [HttpGet, Authorize(Roles = "Manager")]
         public async Task<IActionResult> GetMarkets()
         {
@@ -46,7 +50,18 @@ namespace CompanyEmployees.Controllers
                 return Ok(marketDto);
             }
         }
-        [HttpPost]
+        /// <summary>
+        /// Создает рынок
+        /// </summary>
+        /// <param name="market"></param>.
+        /// <returns>Cозданный рынок</returns>.
+        /// <response code="201"> Возвращает только что созданный элемент</response>.
+        /// <response code="400"> Если элемент равен null</response>.
+        /// <response code="422"> Если модель недействительна</response>.
+        [HttpPost(Name = "CreateMarket")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(422)]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> CreateMarket([FromBody] MarketForCreationDto market)
         {
